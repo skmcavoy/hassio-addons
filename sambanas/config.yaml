@@ -50,6 +50,7 @@ options:
   other_users: []
   acl: []
   interfaces: []
+  mountoptions: "nosuid,relatime,noexec"
 schema:
   workgroup: str
   username: str
@@ -88,6 +89,7 @@ schema:
   interfaces:
   - str?   
   log_level: list(trace|debug|info|notice|warning|error|fatal)?   
+  mountoptions: str
 
 
 image: dianlight/{arch}-addon-sambanas

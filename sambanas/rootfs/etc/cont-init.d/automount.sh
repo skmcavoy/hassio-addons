@@ -15,6 +15,7 @@ function mount_disk() { # $1 disk $2 path $3 remote_mount
      disk=$1
      path=$2
      remote_mount=$3
+     mntops=$4
      devpath=/dev/disk/by-label
      if [[ $disk == id:* ]] ; then
           bashio::log.info "Disk ${disk:3} is an ID"
@@ -35,7 +36,7 @@ function mount_disk() { # $1 disk $2 path $3 remote_mount
           ssh root@${ipaddress%/*} -p 22222 -o "StrictHostKeyChecking no" "if grep -qs '/mnt/data/supervisor/media/$disk ' /proc/mounts; then echo 'Disk $disk already mounted on host' ; else  mount -t auto $devpath/$disk /mnt/data/supervisor/media/$disk -o nosuid,relatime,noexec; fi" \
                && echo $devpath/$disk >> /tmp/remote_mount
           fi || bashio::log.warning "Host Mount ${disk} Fail!" || :
-          mount -t auto $devpath/$disk $path/$disk -o nosuid,relatime,noexec \
+          mount -t auto $devpath/$disk $path/$disk -o $mntops \
           && echo $path/$disk >> /tmp/local_mount && bashio::log.info "Mount ${disk} Success!"
      fi
 }
@@ -84,13 +85,13 @@ elif bashio::config.has_value 'moredisks'; then
           LABELS=$(ls /dev/disk/by-label | grep -v hassos || true )
           bashio::log.info "Available Disk Labels:\n ${LABELS}"
      fi
-
+     mnt_ops=bashio::config 'mountoptions'
      MOREDISKS=$(bashio::config 'moredisks')
      bashio::log.info "More Disks mounting.. ${MOREDISKS}" && \
      for disk in $MOREDISKS 
      do
          #bashio::log.info "Mount ${disk}"
-         mount_disk $disk $path $remote_mount && bashio::log.info "Success!" || bashio::log.warning "Fail to mount ${disk}!"   
+         mount_disk $disk $path $remote_mount $mnt_ops && bashio::log.info "Success!" || bashio::log.warning "Fail to mount ${disk}!"   
      done
 
      echo $path > /tmp/mountpath 
